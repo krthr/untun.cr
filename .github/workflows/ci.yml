@@ -11,9 +11,6 @@ jobs:
           - target: x86_64-linux-gnu
             os: ubuntu-latest
             binary_name: untun-linux-x64
-          - target: i386-linux-gnu
-            os: ubuntu-latest
-            binary_name: untun-linux-x86
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -24,6 +21,17 @@ jobs:
       - name: Download source
         uses: actions/checkout@v5
 
+      - name: Cache shards
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./lib
+            ~/.cache/shards
+          key: shards-${{ matrix.platform.os }}-${{ hashFiles('shard.yml', 'shard.lock') }}
+          restore-keys: |
+            shards-${{ matrix.platform.os }}-${{ hashFiles('shard.yml') }}
+            shards-${{ matrix.platform.os }}-
+
       - name: Install Crystal (Ubuntu)
         if: matrix.platform.os == 'ubuntu-latest'
         run: |
@@ -33,12 +41,6 @@ jobs:
         if: matrix.platform.os == 'macos-latest'
         run: |
           brew install crystal
-
-      - name: Install cross-compilation dependencies (Linux x86)
-        if: matrix.platform.target == 'i386-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib
 
       - name: Install shards
         run: shards check || shards install
