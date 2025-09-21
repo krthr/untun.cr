@@ -4,6 +4,20 @@ version: 0.1.0
 authors:
   - Wilson Tovar <wtovaragudelo@gmail.com>
 
+description: |
+  Tunnel your local HTTP(s) server to the world! 
+  A Crystal port of untun, powered by Cloudflare Quick Tunnels.
+
+  Crystal port of https://github.com/unjs/untun
+
 crystal: '>= 1.17.1'
 
 license: MIT
+
+targets:
+  untun:
+    main: src/cli.cr
+
+dependencies:
+  crest:
+    github: mamantoha/crest

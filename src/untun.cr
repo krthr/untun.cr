@@ -1,6 +1,12 @@
-# TODO: Write documentation for `Untun`
-module Untun
-  VERSION = "0.1.0"
+require "log"
+require "./untun/**"
 
-  # TODO: Put your code here
+module Untun
+  # :nodoc:
+  Log = ::Log.for(
+    self,
+    level: ENV["LOG_LEVEL"]?.try { |v| ::Log::Severity.parse(v) } || ::Log::Severity::Info
+  )
+
+  VERSION = "0.1.0"
 end
