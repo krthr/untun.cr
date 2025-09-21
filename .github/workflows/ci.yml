@@ -2,10 +2,20 @@ on: push
 
 jobs:
   build:
-    container:
-      image: crystallang/crystal:latest-alpine
+    strategy:
+      matrix:
+        platform:
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            binary_name: untun-macos-x64
+          - target: x86_64-linux-gnu
+            os: ubuntu-latest
+            binary_name: untun-linux-x64
+          - target: i386-linux-gnu
+            os: ubuntu-latest
+            binary_name: untun-linux-x86
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform.os }}
 
     permissions:
       contents: write
@@ -14,15 +24,33 @@ jobs:
       - name: Download source
         uses: actions/checkout@v5
 
+      - name: Install Crystal (Ubuntu)
+        if: matrix.platform.os == 'ubuntu-latest'
+        run: |
+          curl -fsSL https://crystal-lang.org/install.sh | sudo bash
+
+      - name: Install Crystal (macOS)
+        if: matrix.platform.os == 'macos-latest'
+        run: |
+          brew install crystal
+
+      - name: Install cross-compilation dependencies (Linux x86)
+        if: matrix.platform.target == 'i386-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib
+
       - name: Install shards
         run: shards check || shards install
 
-      - name: Check formatting
+      - name: Check formatting (Linux x64 only)
+        if: matrix.platform.target == 'x86_64-linux-gnu'
         run: crystal tool format --check
 
       - name: Build
         run: |
           shards build --production --release --no-debug
+          mv bin/untun bin/${{ matrix.platform.binary_name }}
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -31,5 +59,5 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           files: |
-            ./bin/untun
+            ./bin/${{ matrix.platform.binary_name }}
           make_latest: true
