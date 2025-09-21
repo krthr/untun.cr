@@ -27,4 +27,4 @@ jobs:
       - name: Check formatting
         run: crystal tool format --check
       - name: Build CLI
-        run: shards build --production --release --static --no-debug
+        run: shards build --production --release --no-debug
