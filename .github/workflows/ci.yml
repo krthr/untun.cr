@@ -20,12 +20,11 @@ jobs:
       - name: Cache shards
         uses: actions/cache@v4
         with:
-          path: ~/.cache/shards
-          key: ${{ runner.os }}-shards-${{ hashFiles('shard.yml') }}
-          restore-keys: ${{ runner.os }}-shards-
+          path: lib
+          key: ${{ runner.os }}-shards-${{ hashFiles('**/shard.lock') }}
       - name: Install shards
-        run: shards install
+        run: shards check || shards install
       - name: Check formatting
         run: crystal tool format --check
       - name: Build CLI
-        run: shards build --release
+        run: shards build --production --release --static --no-debug
