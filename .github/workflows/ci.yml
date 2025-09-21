@@ -5,26 +5,48 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    container:
+      image: crystallang/crystal:latest-alpine
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
     steps:
       - name: Download source
         uses: actions/checkout@v5
+
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
           crystal: 1.17
+
       - name: Cache shards
         uses: actions/cache@v4
         with:
           path: lib
           key: ${{ runner.os }}-shards-${{ hashFiles('**/shard.lock') }}
+
       - name: Install shards
         run: shards check || shards install
+
       - name: Check formatting
         run: crystal tool format --check
+
       - name: Build CLI
         run: shards build --production --release --no-debug
+
+      - name: Build
+        run: |
+          shards build --production --release --no-debug
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            ./bin/untun
+          make_latest: true

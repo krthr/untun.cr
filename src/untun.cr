@@ -8,5 +8,5 @@ module Untun
     level: ENV["LOG_LEVEL"]?.try { |v| ::Log::Severity.parse(v) } || ::Log::Severity::Info
   )
 
-  VERSION = "0.1.0"
+  VERSION = {{ `shards version #{__DIR__}`.strip.stringify }}
 end
