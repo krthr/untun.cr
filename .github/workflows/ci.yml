@@ -49,6 +49,9 @@ jobs:
         if: matrix.platform.target == 'x86_64-linux-gnu'
         run: crystal tool format --check
 
+      - name: Test
+        run: crystal spec
+
       - name: Build
         run: |
           shards build --production --release --no-debug
